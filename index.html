@@ -393,6 +393,7 @@ body {
   <div class="ctx-item" onclick="ctxClose()">重命名</div>
   <div class="ctx-item" onclick="ctxClose()">移动至 <span>▶</span></div>
   <div class="ctx-item" id="ctxTexture">另存成自定义纹理</div>
+  <div class="ctx-item" onclick="copyId(event)">复制 ID</div>
   <div class="ctx-divider"></div>
   <div class="ctx-item perm" id="ctxAuth" onclick="openModal('own')">授权至地图</div>
   <div class="ctx-item"      id="ctxPub"  onclick="ctxClose()">公开资源</div>
@@ -402,7 +403,7 @@ body {
 
 <!-- Context menu - 共建可用资源（只读） -->
 <div class="ctx-menu" id="ctxCollab">
-  <div class="ctx-item" onclick="ctxClose()">查看详情</div>
+  <div class="ctx-item" onclick="copyId(event)">复制 ID</div>
 </div>
 
 <!-- Authorize modal -->
@@ -580,6 +581,13 @@ body {
     document.getElementById('ctxCollab').classList.remove('show');
   }
   document.addEventListener('click', () => ctxClose());
+
+  function copyId(e) {
+    ctxClose();
+    const id = document.getElementById('detailId').textContent;
+    navigator.clipboard.writeText(id).catch(() => {});
+    snack('已复制 ID：' + id);
+  }
 
   /* ── Modal ── */
   function openModal(type) {
