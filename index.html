@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>文件管理器 · 授权至地图 原型</title>
+<title>文件管理器 · 授权给地图 原型</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -12,7 +12,7 @@ body {
 }
 
 /* ── Window ── */
-.window { width: 1020px; height: 660px; background: #1a1a22; border-radius: 6px 6px 0 0; box-shadow: 0 8px 40px rgba(0,0,0,.8); display: flex; flex-direction: column; overflow: hidden; }
+.window { width: 1080px; height: 700px; background: #1a1a22; border-radius: 6px 6px 0 0; box-shadow: 0 8px 40px rgba(0,0,0,.8); display: flex; flex-direction: column; overflow: hidden; }
 .title-bar { height: 32px; background: #111118; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #2a2a35; flex-shrink: 0; position: relative; }
 .title-bar .title { font-size: 13px; color: #888; }
 .wm-btns { position: absolute; right: 10px; display: flex; gap: 8px; }
@@ -20,6 +20,15 @@ body {
 .wm-btn:hover { background: #3a3a48; color: #ccc; }
 .wm-btn.close:hover { background: #c03030; color: #fff; }
 .body { display: flex; flex: 1; overflow: hidden; }
+
+/* ── Window status bar (cross-panel) ── */
+.window-statusbar { flex-shrink: 0; height: 34px; background: #111118; border-top: 1px solid #222230; display: flex; align-items: center; padding: 0 12px; gap: 14px; }
+.ws-stats { display: flex; gap: 16px; font-size: 10px; color: #55606a; }
+.ws-spacer { flex: 1; }
+.grant-all-btn { padding: 5px 14px; background: linear-gradient(90deg,#5a3020,#4a2018); border: 1px solid #7a3a28; border-radius: 3px; font-size: 12px; color: #ffb090; cursor: pointer; font-family: inherit; transition: all .15s; white-space: nowrap; display: flex; align-items: center; gap: 5px; }
+.grant-all-btn:hover { background: linear-gradient(90deg,#6a3a28,#5a2820); color: #ffc8a0; }
+.ws-perm-link { font-size: 11px; color: #5577aa; cursor: pointer; display: flex; align-items: center; gap: 3px; padding: 4px 8px; border-radius: 3px; }
+.ws-perm-link:hover { background: #1a2a3a; color: #88aacc; }
 
 /* ── Type tabs ── */
 .type-tabs { width: 52px; background: #111118; border-right: 1px solid #222230; display: flex; flex-direction: column; padding: 6px 0; flex-shrink: 0; }
@@ -31,7 +40,7 @@ body {
 .type-tab.active .lbl { color: #9ab0dd; }
 
 /* ── Tree panel ── */
-.tree-panel { width: 310px; background: #1a1a22; border-right: 1px solid #222230; display: flex; flex-direction: column; flex-shrink: 0; }
+.tree-panel { width: 340px; background: #1a1a22; border-right: 1px solid #222230; display: flex; flex-direction: column; flex-shrink: 0; }
 .tree-top { padding: 6px 8px; border-bottom: 1px solid #222230; flex-shrink: 0; }
 .tree-top-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
 .sort-btn { background: #252530; border: 1px solid #333340; border-radius: 3px; padding: 3px 8px; font-size: 11px; color: #888; cursor: pointer; display: flex; align-items: center; gap: 3px; white-space: nowrap; }
@@ -53,9 +62,11 @@ body {
 .fold-name { flex: 1; }
 .fold-count { font-size: 11px; color: #555; }
 
-.tree-item { display: flex; align-items: center; gap: 7px; padding: 5px 8px 5px 26px; cursor: pointer; font-size: 12px; color: #bbb; }
+.tree-item { display: flex; align-items: center; gap: 7px; padding: 5px 8px 5px 26px; cursor: pointer; font-size: 12px; color: #bbb; position: relative; }
 .tree-item:hover { background: #1e1e2c; }
 .tree-item.selected { background: #253050; color: #d8e4ff; }
+.tree-item.multi-sel { background: #1d2a4a; color: #c8d8ff; }
+.tree-item.multi-sel::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: #4a8aff; }
 .item-thumb { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; background: #2a2a38; border: 1px solid #333340; display: flex; align-items: center; justify-content: center; font-size: 11px; }
 .item-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .item-author { font-size: 10px; color: #505060; white-space: nowrap; }
@@ -65,10 +76,6 @@ body {
 .perm-p { background: rgba(40,167,69,.15); color: #3ab85a; border: 1px solid rgba(40,167,69,.2); }
 .perm-a { background: rgba(67,97,238,.18); color: #6688cc; border: 1px solid rgba(67,97,238,.25); }
 
-/* collab section divider */
-.collab-divider { height: 1px; background: #222230; margin: 4px 0; }
-.collab-section-label { padding: 5px 10px 2px; font-size: 10px; color: #505060; letter-spacing: .4px; }
-
 /* ── Tree footer ── */
 .tree-footer { flex-shrink: 0; border-top: 1px solid #222230; }
 .res-pkg-btn { width: 100%; background: #1e1e28; border: none; border-bottom: 1px solid #222230; padding: 8px 0; font-size: 12px; color: #777; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; }
@@ -77,30 +84,32 @@ body {
 
 /* ── Preview ── */
 .preview-panel { flex: 1; background: #141420; display: flex; flex-direction: column; position: relative; }
-.preview-topbar { position: absolute; top: 8px; right: 10px; display: flex; align-items: center; gap: 8px; }
+.preview-topbar { position: absolute; top: 8px; right: 10px; display: flex; align-items: center; gap: 8px; z-index: 100; }
 .detail-btn { background: #2a5aee; border: none; border-radius: 3px; padding: 5px 12px; font-size: 12px; color: #fff; cursor: pointer; font-family: inherit; }
 .detail-btn:hover { background: #3a6aff; }
 .detail-btn.active { background: #4a8aff; }
 .preview-area { flex: 1; display: flex; align-items: center; justify-content: center; background-image: radial-gradient(circle,#1e1e2c 1px,transparent 1px); background-size: 20px 20px; }
 .preview-img { font-size: 96px; opacity: .7; }
 .preview-label { position: absolute; bottom: 14px; left: 0; right: 0; text-align: center; font-size: 12px; color: #555; }
+.multi-sel-banner { position: absolute; top: 8px; left: 10px; background: #1d2a4a; border: 1px solid #4a8aff; padding: 5px 12px; border-radius: 3px; font-size: 12px; color: #b8d0ff; }
+.multi-sel-banner.hidden { display: none; }
 
 /* ── Detail card ── */
 .detail-card {
-  position: absolute; top: 38px; right: 10px;
+  position: absolute; top: 42px; right: 10px;
   background: #1a1a28; border: 1px solid #2a2a3a;
-  border-radius: 5px; min-width: 200px; max-width: 240px;
+  border-radius: 5px; min-width: 220px; max-width: 260px;
   box-shadow: 0 4px 16px rgba(0,0,0,.6);
-  animation: fadeIn .15s ease; display: none;
+  animation: fadeIn .15s ease; display: none; z-index: 90;
 }
 .detail-card.show { display: block; }
 .detail-card-header { padding: 8px 12px; border-bottom: 1px solid #222230; font-size: 11px; color: #667788; }
 .detail-row { display: flex; padding: 6px 12px; gap: 8px; border-bottom: 1px solid #1e1e28; }
 .detail-row:last-child { border-bottom: none; }
-.detail-key { font-size: 11px; color: #505868; white-space: nowrap; min-width: 48px; padding-top: 1px; }
+.detail-key { font-size: 11px; color: #505868; white-space: nowrap; min-width: 60px; padding-top: 1px; }
 .detail-val { font-size: 12px; color: #9ab8dd; word-break: break-all; }
 
-/* ── Upload toast ── */
+/* ── Upload toast / dialog ── */
 .upload-toast { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: #141418; border: 1px solid #2a3a50; border-radius: 5px; padding: 8px 14px; display: flex; align-items: center; gap: 10px; white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,.6); z-index: 500; animation: slideUp .2s ease; }
 .upload-toast.hidden { display: none; }
 .t-ok { color: #28a745; }
@@ -111,6 +120,15 @@ body {
 .t-yes { background: #4361ee; color: #fff; } .t-yes:hover { background: #3651d8; }
 .t-no  { background: transparent; color: #7788aa; border-color: #2a3a50; } .t-no:hover { background: #1e2a4a; }
 
+/* Upload confirm modal (in-collab) */
+.upload-confirm { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); background: #141418; border: 1px solid #2a3a50; border-radius: 6px; box-shadow: 0 8px 32px rgba(0,0,0,.7); z-index: 500; width: 380px; animation: slideUp .2s ease; }
+.upload-confirm.hidden { display: none; }
+.uc-body { padding: 16px 18px; }
+.uc-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; color: #c8c8d0; }
+.uc-head b { color: #fff; }
+.uc-desc { font-size: 12px; color: #808090; line-height: 1.5; }
+.uc-footer { padding: 10px 18px; border-top: 1px solid #222230; display: flex; justify-content: flex-end; gap: 8px; }
+
 /* ── Context menu ── */
 .ctx-menu { position: fixed; background: #141418; border: 1px solid #2a2a38; border-radius: 5px; padding: 4px 0; min-width: 170px; z-index: 1000; box-shadow: 0 6px 24px rgba(0,0,0,.75); display: none; }
 .ctx-menu.show { display: block; animation: fadeIn .1s ease; }
@@ -118,44 +136,73 @@ body {
 .ctx-item:hover { background: #1e2040; color: #fff; }
 .ctx-item.perm { color: #7799ee; } .ctx-item.perm:hover { background: #161e3a; }
 .ctx-item.danger { color: #e06060; } .ctx-item.danger:hover { background: #2a1520; }
+.ctx-item.multi-tag::after { content: attr(data-count); font-size: 10px; color: #6a86bb; background: #1a2540; padding: 1px 5px; border-radius: 8px; margin-left: 6px; }
 .ctx-divider { height: 1px; background: #222230; margin: 3px 0; }
 
 /* ── Modal ── */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; z-index: 900; animation: fadeIn .15s ease; }
 .modal-overlay.hidden { display: none; }
-.modal { background: #141418; border: 1px solid #2a2a38; border-radius: 6px; width: 460px; display: flex; flex-direction: column; box-shadow: 0 8px 40px rgba(0,0,0,.7); animation: slideUp .2s ease; }
+.modal { background: #141418; border: 1px solid #2a2a38; border-radius: 6px; width: 500px; display: flex; flex-direction: column; box-shadow: 0 8px 40px rgba(0,0,0,.7); animation: slideUp .2s ease; max-height: 82vh; }
 .modal-header { padding: 14px 18px; border-bottom: 1px solid #222230; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; }
+.modal-header-left { display: flex; align-items: center; gap: 10px; }
+.modal-info-btn { background: none; border: 1px solid #2a3a4a; border-radius: 3px; color: #6688aa; font-size: 10px; padding: 2px 6px; cursor: pointer; font-family: inherit; }
+.modal-info-btn:hover { background: #1a2a3a; color: #88aacc; }
 .modal-header .close-btn { width: 22px; height: 22px; background: none; border: none; color: #606070; font-size: 15px; cursor: pointer; border-radius: 3px; display: flex; align-items: center; justify-content: center; }
 .modal-header .close-btn:hover { background: #e04040; color: #fff; }
-.modal-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
-.modal-footer { padding: 10px 18px; border-top: 1px solid #222230; display: flex; justify-content: flex-end; gap: 8px; }
+.modal-body { padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+.modal-body::-webkit-scrollbar { width: 4px; }
+.modal-body::-webkit-scrollbar-thumb { background: #2a2a40; border-radius: 2px; }
+.modal-footer { padding: 10px 18px; border-top: 1px solid #222230; display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
 
 .warning-bar { background: rgba(224,160,48,.1); border: 1px solid rgba(224,160,48,.25); border-radius: 4px; padding: 9px 12px; font-size: 12px; color: #c8a060; line-height: 1.6; }
 .warning-bar b { color: #e0b060; }
+.warning-danger { background: rgba(224,60,48,.12); border: 1px solid rgba(224,60,48,.35); color: #e08a80; }
+.warning-danger b { color: #ffb090; }
+.warning-danger ul { margin: 6px 0 0 18px; }
+.warning-danger li { font-size: 12px; line-height: 1.7; }
+
 .asset-chip { background: #1e1e2e; border: 1px solid #2a2a40; border-radius: 3px; padding: 3px 8px; font-size: 11px; color: #aaa; display: inline-flex; align-items: center; gap: 5px; }
 .asset-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-.modal-sub-label { font-size: 12px; color: #6c6c80; }
-.map-list { border: 1px solid #2a2a38; border-radius: 4px; overflow-y: auto; max-height: 200px; }
+.modal-sub-label { font-size: 12px; color: #6c6c80; display: flex; align-items: center; justify-content: space-between; }
+
+.modal-search { display: flex; align-items: center; background: #1e1e28; border: 1px solid #2a2a38; border-radius: 3px; padding: 4px 8px; }
+.modal-search input { flex: 1; background: transparent; border: none; outline: none; color: #c8c8d0; font-size: 12px; font-family: inherit; }
+.modal-search input::placeholder { color: #444; }
+
+.map-list { border: 1px solid #2a2a38; border-radius: 4px; overflow-y: auto; max-height: 260px; }
 .map-list::-webkit-scrollbar { width: 4px; }
 .map-list::-webkit-scrollbar-thumb { background: #2a2a40; border-radius: 2px; }
+.map-group-header { background: #1a1a26; padding: 5px 12px; font-size: 10px; color: #5a6a80; letter-spacing: 1px; border-bottom: 1px solid #222230; text-transform: uppercase; }
 .map-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid #1e1e28; cursor: pointer; transition: background .12s; }
 .map-row:last-child { border-bottom: none; }
 .map-row:hover:not(.locked) { background: #1a1a28; }
-.map-row.locked { cursor: default; opacity: .45; }
+.map-row.locked { cursor: not-allowed; opacity: .55; }
 .map-row.sel { background: #141e38; }
 .map-cb { width: 14px; height: 14px; border: 1px solid #3a3a58; border-radius: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; color: transparent; }
 .map-cb.on   { background: #4361ee; border-color: #4361ee; color: #fff; }
 .map-cb.lock { background: #1e1e2e; border-color: #2a2a38; color: #505060; }
-.map-name-col { font-size: 13px; color: #c8c8d0; flex: 1; }
+.map-cb.partial { background: #2a3560; border-color: #4361ee; }
+.map-cb.partial::before { content: "–"; color: #7799ff; }
+.map-name-col { font-size: 13px; color: #c8c8d0; flex: 1; display: flex; align-items: center; gap: 6px; }
+.map-current-tag { font-size: 10px; padding: 1px 5px; border-radius: 2px; background: rgba(67,97,238,.2); color: #7799ee; border: 1px solid rgba(67,97,238,.3); }
 .map-st { font-size: 11px; padding: 1px 7px; border-radius: 3px; }
 .map-st.draft { background: #1e1e28; color: #606070; border: 1px solid #2a2a38; }
 .map-st.pub   { background: rgba(40,167,69,.12); color: #28a745; border: 1px solid rgba(40,167,69,.25); }
 .map-st.done  { background: rgba(67,97,238,.12); color: #6688cc; border: 1px solid rgba(67,97,238,.25); }
+.map-st.grant-all { background: rgba(224,120,60,.15); color: #ffa070; border: 1px solid rgba(224,120,60,.35); }
 
-.btn { font-family: inherit; font-size: 12px; padding: 5px 14px; border-radius: 3px; cursor: pointer; border: 1px solid transparent; }
+.confirm-check { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 10px; background: #1a1a26; border: 1px solid #2a2a38; border-radius: 4px; font-size: 12px; color: #b0b0c0; }
+.confirm-check:hover { background: #1e1e2e; }
+.confirm-check .cc-box { width: 14px; height: 14px; border: 1px solid #3a3a58; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: transparent; }
+.confirm-check.on .cc-box { background: #e04a30; border-color: #e04a30; color: #fff; }
+
+.btn { font-family: inherit; font-size: 12px; padding: 6px 16px; border-radius: 3px; cursor: pointer; border: 1px solid transparent; }
 .btn-primary { background: #4361ee; color: #fff; border-color: #4361ee; }
 .btn-primary:hover { background: #3651d8; }
 .btn-primary:disabled { background: #2a2a50; color: #505068; border-color: #2a2a50; cursor: not-allowed; }
+.btn-danger { background: #d0442a; color: #fff; border-color: #d0442a; }
+.btn-danger:hover { background: #c03420; }
+.btn-danger:disabled { background: #40201a; color: #605040; border-color: #40201a; cursor: not-allowed; }
 .btn-ghost { background: transparent; color: #7788aa; border-color: transparent; }
 .btn-ghost:hover { background: #1e2a4a; color: #b0c0e0; }
 
@@ -163,14 +210,15 @@ body {
 @keyframes slideUp { from { transform: translateY(14px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
 
 /* ── Scene pill ── */
-.scene-pill { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #141418; border: 1px solid #2a2a40; border-radius: 20px; display: flex; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,.6); }
-.spill-btn { padding: 6px 16px; border: none; background: transparent; font-size: 12px; color: #666; cursor: pointer; font-family: inherit; transition: all .15s; white-space: nowrap; }
+.scene-pill { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #141418; border: 1px solid #2a2a40; border-radius: 20px; display: flex; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,.6); flex-wrap: wrap; max-width: 96vw; }
+.spill-btn { padding: 6px 14px; border: none; background: transparent; font-size: 12px; color: #666; cursor: pointer; font-family: inherit; transition: all .15s; white-space: nowrap; }
 .spill-btn:hover { color: #aaa; background: #1a1a28; }
 .spill-btn.active { background: #3060e0; color: #fff; }
 
 /* ── Snackbar ── */
 .snackbar { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%); background: #141c14; border: 1px solid #2a4a2a; border-radius: 5px; padding: 8px 18px; color: #40c060; font-size: 12px; z-index: 2000; box-shadow: 0 4px 16px rgba(0,0,0,.6); white-space: nowrap; display: none; }
 .snackbar.show { display: block; animation: fadeIn .2s ease; }
+.snackbar.warn { color: #ffc060; border-color: #4a3a1a; background: #1c1a10; }
 
 /* ── Help button in title bar ── */
 .help-btn {
@@ -186,7 +234,7 @@ body {
 .help-popover {
   position: absolute; top: 32px; left: 10px; z-index: 800;
   background: #141c26; border: 1px solid #2a3a4a; border-radius: 5px;
-  width: 280px; box-shadow: 0 6px 20px rgba(0,0,0,.6);
+  width: 300px; box-shadow: 0 6px 20px rgba(0,0,0,.6);
   animation: slideUp .15s ease;
 }
 .help-popover.hidden { display: none; }
@@ -194,8 +242,8 @@ body {
 /* ── Info panel shared styles ── */
 .info-section { padding: 10px 12px; }
 .info-title { font-size: 11px; color: #7799aa; font-weight: 600; margin-bottom: 7px; letter-spacing: .3px; }
-.info-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
-.info-badge { font-size: 9px; padding: 1px 6px; border-radius: 2px; white-space: nowrap; flex-shrink: 0; }
+.info-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 5px; }
+.info-badge { font-size: 9px; padding: 1px 6px; border-radius: 2px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
 .perm-r-sm { background: rgba(160,80,255,.15); color: #aa77ee; border: 1px solid rgba(160,80,255,.2); }
 .perm-p-sm { background: rgba(40,167,69,.15);  color: #3ab85a; border: 1px solid rgba(40,167,69,.2); }
 .info-desc { font-size: 11px; color: #8898a8; line-height: 1.5; }
@@ -223,14 +271,15 @@ body {
     </div>
     <div class="info-divider"></div>
     <div class="info-section">
-      <div class="info-title">共建可用资源来源</div>
+      <div class="info-title">共创者授权给地图 · 来源规则</div>
       <div class="info-body">当前地图的共建成员，满足以下条件之一的资源将出现在此列表：</div>
-      <div class="info-bullet">· 共建成员已将该受限资源授权至本地图</div>
-      <div class="info-bullet">· 共建成员的资源权限为公开</div>
+      <div class="info-bullet">· 共建成员通过「授权给地图」将资源授权至本地图</div>
+      <div class="info-bullet">· 共建成员对本地图开启了「一键全量授权」</div>
+      <div class="info-bullet">· 共建成员的资源权限为公开（仅当上传者仍是本地图共建者）</div>
     </div>
   </div>
-  <div class="body">
 
+  <div class="body">
     <!-- Type tabs -->
     <div class="type-tabs">
       <div class="type-tab active"><span class="ico">🖼️</span><span class="lbl">图片</span></div>
@@ -271,22 +320,22 @@ body {
           <span class="fold-arrow">▼</span><span class="fold-icon">📁</span>
           <span class="fold-name">我的文件</span>
         </div>
-        <div class="tree-item" id="item1" oncontextmenu="ctxShow(event,'r')" onclick="selectItem(this,'🖼️')">
+        <div class="tree-item my-item" id="item1" data-perm="r" oncontextmenu="ctxShow(event, this)" onclick="clickItem(event,this,'🖼️')">
           <div class="item-thumb" style="background:#2a1a3a;border-color:#3a2a4a">🖼️</div>
           <span class="item-name">角色立绘_主角</span>
           <span class="perm-badge perm-r">受限</span>
         </div>
-        <div class="tree-item" id="item2" oncontextmenu="ctxShow(event,'r')" onclick="selectItem(this,'🖼️')">
+        <div class="tree-item my-item" id="item2" data-perm="r" oncontextmenu="ctxShow(event, this)" onclick="clickItem(event,this,'🖼️')">
           <div class="item-thumb" style="background:#1a2030;border-color:#2a3040">🖼️</div>
           <span class="item-name">UI背景_蓝色系</span>
           <span class="perm-badge perm-r">受限</span>
         </div>
-        <div class="tree-item" id="item3" oncontextmenu="ctxShow(event,'p')" onclick="selectItem(this,'🖼️')">
+        <div class="tree-item my-item" id="item3" data-perm="p" oncontextmenu="ctxShow(event, this)" onclick="clickItem(event,this,'🖼️')">
           <div class="item-thumb" style="background:#1a2a1a;border-color:#2a3a2a">🖼️</div>
           <span class="item-name">通用图标集</span>
           <span class="perm-badge perm-p">公开</span>
         </div>
-        <div class="tree-item" id="item4" oncontextmenu="ctxShow(event,'r')" onclick="selectItem(this,'🖼️')">
+        <div class="tree-item my-item" id="item4" data-perm="r" oncontextmenu="ctxShow(event, this)" onclick="clickItem(event,this,'🖼️')">
           <div class="item-thumb" style="background:#2a2a1a;border-color:#3a3a2a">🖼️</div>
           <span class="item-name">场景背景_夕阳</span>
           <span class="perm-badge perm-r">受限</span>
@@ -298,29 +347,29 @@ body {
           <span class="fold-name">已导入资源包</span>
         </div>
 
-        <!-- 共建可用资源 -->
+        <!-- 共创者授权给地图 -->
         <div class="tree-folder" style="margin-top:4px" id="collabFolder">
           <span class="fold-arrow" id="collabArrow">▶</span>
           <span class="fold-icon">👥</span>
-          <span class="fold-name">共建可用资源</span>
+          <span class="fold-name">共创者授权给地图</span>
         </div>
         <div id="collabItems" style="display:none">
-          <div class="tree-item" data-collab="1" data-name="场景贴图_城市夜景" data-author="张三" oncontextmenu="ctxShow(event,'collab')" onclick="selectItem(this,'🖼️',true)">
+          <div class="tree-item" data-collab="1" data-name="场景贴图_城市夜景" data-author="张三" data-source="授权给地图" oncontextmenu="ctxShow(event, this)" onclick="clickItem(event,this,'🖼️')">
             <div class="item-thumb" style="background:#1a1a2a;border-color:#2a2a3a">🖼️</div>
             <span class="item-name">场景贴图_城市夜景</span>
             <span class="perm-badge perm-r">受限</span>
           </div>
-          <div class="tree-item" data-collab="1" data-name="UI_按钮素材集" data-author="张三" oncontextmenu="ctxShow(event,'collab')" onclick="selectItem(this,'🖼️',true)">
+          <div class="tree-item" data-collab="1" data-name="UI_按钮素材集" data-author="张三" data-source="授权给地图" oncontextmenu="ctxShow(event, this)" onclick="clickItem(event,this,'🖼️')">
             <div class="item-thumb" style="background:#1a1a2a;border-color:#2a2a3a">🖼️</div>
             <span class="item-name">UI_按钮素材集</span>
             <span class="perm-badge perm-p">公开</span>
           </div>
-          <div class="tree-item" data-collab="1" data-name="角色皮肤_夏日版" data-author="李四" oncontextmenu="ctxShow(event,'collab')" onclick="selectItem(this,'🖼️',true)">
+          <div class="tree-item" data-collab="1" data-name="角色皮肤_夏日版" data-author="李四" data-source="一键全量授权" oncontextmenu="ctxShow(event, this)" onclick="clickItem(event,this,'🖼️')">
             <div class="item-thumb" style="background:#1a1a2a;border-color:#2a2a3a">🖼️</div>
             <span class="item-name">角色皮肤_夏日版</span>
             <span class="perm-badge perm-p">公开</span>
           </div>
-          <div class="tree-item" data-collab="1" data-name="背景图_晴天" data-author="李四" oncontextmenu="ctxShow(event,'collab')" onclick="selectItem(this,'🖼️',true)">
+          <div class="tree-item" data-collab="1" data-name="背景图_晴天" data-author="李四" data-source="一键全量授权" oncontextmenu="ctxShow(event, this)" onclick="clickItem(event,this,'🖼️')">
             <div class="item-thumb" style="background:#1a1a2a;border-color:#2a2a3a">🖼️</div>
             <span class="item-name">背景图_晴天</span>
             <span class="perm-badge perm-r">受限</span>
@@ -330,41 +379,43 @@ body {
 
       <div class="tree-footer">
         <button class="res-pkg-btn">🗂 资源包管理</button>
-        <div class="tree-stats"><span>云端空间 120M/5000M</span><span>文件数量 4/2000</span></div>
       </div>
     </div>
 
     <!-- Preview -->
     <div class="preview-panel">
+      <div class="multi-sel-banner hidden" id="multiBanner">已选中 <b id="multiCount">0</b> 个资源 · 按 Esc 取消 · 右键批量操作</div>
       <div class="preview-topbar">
-        <button class="detail-btn" id="detailBtn" onclick="toggleDetail()">详情>></button>
+        <button class="detail-btn" id="detailBtn" onclick="toggleDetail()">详情&gt;&gt;</button>
       </div>
       <div class="preview-area"><span class="preview-img" id="previewImg">🖼️</span></div>
-      <div class="preview-label" id="previewLabel">点击资源查看详情</div>
+      <div class="preview-label" id="previewLabel">点击资源查看详情 · 按 Ctrl / Shift 多选</div>
+
       <!-- Detail card -->
       <div class="detail-card" id="detailCard">
         <div class="detail-card-header" id="detailSource">我的文件</div>
         <div class="detail-row"><span class="detail-key">名称</span><span class="detail-val" id="detailName">—</span></div>
-        <div class="detail-row" id="detailAuthorRow" style="display:none"><span class="detail-key">来源作者</span><span class="detail-val" id="detailAuthor">—</span></div>
+        <div class="detail-row" id="detailAuthorRow" style="display:none"><span class="detail-key">分享来源</span><span class="detail-val" id="detailAuthor">—</span></div>
+        <div class="detail-row" id="detailFromRow" style="display:none"><span class="detail-key">授权路径</span><span class="detail-val" id="detailFrom">—</span></div>
         <div class="detail-row"><span class="detail-key">权限</span><span class="detail-val" id="detailPerm">—</span></div>
         <div class="detail-row"><span class="detail-key">资源 ID</span><span class="detail-val" id="detailId">—</span></div>
       </div>
 
-      <!-- Upload toast（单文件） -->
+      <!-- Upload toast（单文件 - 无共建者） -->
       <div class="upload-toast hidden" id="toastSingle">
         <span class="t-ok">✓</span>
-        <span class="t-txt"><b>新素材_角色B.png</b> 上传成功 · 是否授权至当前地图？</span>
+        <span class="t-txt"><b>新素材_角色B.png</b> 上传成功</span>
         <div class="t-btns">
-          <button class="t-btn t-yes" onclick="toastDone('toastSingle','已授权至当前地图')">授权</button>
-          <button class="t-btn t-no"  onclick="toastDone('toastSingle','')">暂不</button>
+          <button class="t-btn t-yes" onclick="quickGrant('toastSingle', ['新素材_角色B.png'])">授权给地图</button>
+          <button class="t-btn t-no"  onclick="toastDone('toastSingle','')">关闭</button>
         </div>
       </div>
 
-      <!-- Upload toast（多文件） -->
-      <div class="upload-toast hidden" id="toastMulti" style="flex-direction:column;align-items:flex-start;gap:8px;white-space:normal;max-width:420px">
+      <!-- Upload toast（多文件 - 无共建者） -->
+      <div class="upload-toast hidden" id="toastMulti" style="flex-direction:column;align-items:flex-start;gap:8px;white-space:normal;max-width:440px">
         <div style="display:flex;align-items:center;gap:8px">
           <span class="t-ok">✓</span>
-          <span class="t-txt"><b>3 个文件</b>上传成功 · 是否将全部文件授权至当前地图？</span>
+          <span class="t-txt"><b>3 个文件</b>上传成功</span>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:5px;padding-left:22px">
           <span class="asset-chip">🖼️ 角色立绘_B.png</span>
@@ -372,74 +423,181 @@ body {
           <span class="asset-chip">🖼️ UI_弹窗背景.png</span>
         </div>
         <div class="t-btns" style="align-self:flex-end">
-          <button class="t-btn t-yes" onclick="toastDone('toastMulti','已将 3 个文件授权至当前地图')">全部授权</button>
-          <button class="t-btn t-no"  onclick="toastDone('toastMulti','')">暂不</button>
+          <button class="t-btn t-yes" onclick="quickGrant('toastMulti', ['角色立绘_B.png','场景贴图_雪山.png','UI_弹窗背景.png'])">授权给地图</button>
+          <button class="t-btn t-no"  onclick="toastDone('toastMulti','')">关闭</button>
+        </div>
+      </div>
+
+      <!-- Upload confirm（有共建者） -->
+      <div class="upload-confirm hidden" id="uploadConfirm">
+        <div class="uc-body">
+          <div class="uc-head"><span class="t-ok">✓</span><b>3 个文件</b>上传成功</div>
+          <div class="uc-desc">当前地图存在其他共建者，是否将本次上传的资源授权给地图，让共建者可在资源选择器中使用？</div>
+        </div>
+        <div class="uc-footer">
+          <button class="btn btn-ghost" onclick="toastDone('uploadConfirm','')">暂不</button>
+          <button class="btn btn-primary" onclick="quickGrant('uploadConfirm', ['角色立绘_B.png','场景贴图_雪山.png','UI_弹窗背景.png'])">授权给地图</button>
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Cross-panel status bar (跨资源类型全局入口) -->
+  <div class="window-statusbar">
+    <div class="ws-stats">
+      <span>云端空间 120M/5000M</span>
+      <span>文件数量 4/2000</span>
+    </div>
+    <div class="ws-spacer"></div>
+    <button class="grant-all-btn" onclick="openGrantAll()">🚀 一键授权到地图</button>
+    <div class="ws-perm-link" onclick="toggleHelp(event)">ℹ 资源权限规则说明</div>
   </div>
 </div>
 
 <!-- Scene pill -->
 <div class="scene-pill">
-  <button class="spill-btn active" onclick="setScene(0,this)">场景① 右键授权</button>
-  <button class="spill-btn"        onclick="setScene(1,this)">场景② 单文件上传</button>
-  <button class="spill-btn"        onclick="setScene(2,this)">场景③ 多文件上传</button>
-  <button class="spill-btn"        onclick="setScene(3,this)">场景④ 共建可用资源</button>
+  <button class="spill-btn active" onclick="setScene(0,this)">场景① 单资源授权</button>
+  <button class="spill-btn"        onclick="setScene(1,this)">场景② 多选批量</button>
+  <button class="spill-btn"        onclick="setScene(2,this)">场景③ 上传 · 无共建者</button>
+  <button class="spill-btn"        onclick="setScene(3,this)">场景④ 上传 · 有共建者</button>
+  <button class="spill-btn"        onclick="setScene(4,this)">场景⑤ 共创者授权</button>
+  <button class="spill-btn"        onclick="setScene(5,this)">场景⑥ 一键全量授权</button>
 </div>
 
-<!-- Context menu - 我的文件 -->
+<!-- Context menu - 我的文件 单选 -->
 <div class="ctx-menu" id="ctxOwn">
   <div class="ctx-item" onclick="ctxClose()">重命名</div>
   <div class="ctx-item" onclick="ctxClose()">移动至 <span>▶</span></div>
   <div class="ctx-item" id="ctxTexture">另存成自定义纹理</div>
   <div class="ctx-item" onclick="copyId(event)">复制 ID</div>
   <div class="ctx-divider"></div>
-  <div class="ctx-item perm" id="ctxAuth" onclick="openModal('own')">授权至地图</div>
+  <div class="ctx-item perm" id="ctxAuth" onclick="openAuthFromCtx('single')">授权给地图</div>
   <div class="ctx-item"      id="ctxPub"  onclick="ctxClose()">公开资源</div>
   <div class="ctx-divider"></div>
   <div class="ctx-item danger" onclick="ctxClose()">删除</div>
 </div>
 
-<!-- Context menu - 共建可用资源（只读） -->
-<div class="ctx-menu" id="ctxCollab">
-  <div class="ctx-item" onclick="copyId(event)">复制 ID</div>
+<!-- Context menu - 多选 -->
+<div class="ctx-menu" id="ctxMulti">
+  <div class="ctx-item perm multi-tag" id="ctxMultiAuth" data-count="" onclick="openAuthFromCtx('multi')">授权给地图</div>
+  <div class="ctx-item multi-tag" id="ctxMultiPub" data-count="" onclick="ctxClose()">设为公开</div>
+  <div class="ctx-divider"></div>
+  <div class="ctx-item danger multi-tag" id="ctxMultiDel" data-count="" onclick="ctxClose()">删除</div>
 </div>
 
-<!-- Authorize modal -->
+<!-- Context menu - 共创者授权给地图（只读） -->
+<div class="ctx-menu" id="ctxCollab">
+  <div class="ctx-item" onclick="copyId(event)">复制 ID</div>
+  <div class="ctx-item" onclick="ctxClose()">查看详情</div>
+</div>
+
+<!-- 授权给地图 modal -->
 <div class="modal-overlay hidden" id="modalAuth" onclick="bgClose(event,'modalAuth')">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-header">
-      授权至地图
+      <div class="modal-header-left">
+        <span>授权给地图</span>
+        <button class="modal-info-btn" onclick="snack('规则说明由策划配置文本','warn')">ℹ 规则</button>
+      </div>
       <button class="close-btn" onclick="closeModal('modalAuth')">✕</button>
     </div>
     <div class="modal-body">
       <div class="warning-bar">⚠ <b>授权操作不可撤回</b>：授权后，被授权地图的共建成员可在资源选择器中看到并引用该资源。</div>
       <div id="authAssetInfo"></div>
-      <div class="modal-sub-label">选择目标地图（可多选）</div>
-      <div class="map-list">
-        <div class="map-row locked">
-          <div class="map-cb lock">✓</div>
-          <span class="map-name-col">蛋仔冒险岛_夏日版</span>
-          <span class="map-st done">已授权</span>
-        </div>
-        <div class="map-row" onclick="toggleMap(this)">
-          <div class="map-cb"></div><span class="map-name-col">新地图_共建测试</span>
-          <span class="map-st draft">草稿</span>
-        </div>
-        <div class="map-row" onclick="toggleMap(this)">
-          <div class="map-cb"></div><span class="map-name-col">迷宫解谜_v2</span>
-          <span class="map-st draft">草稿</span>
-        </div>
-        <div class="map-row" onclick="toggleMap(this)">
-          <div class="map-cb"></div><span class="map-name-col">冬日主题地图</span>
-          <span class="map-st pub">已发布</span>
-        </div>
+      <div class="modal-sub-label">
+        <span>选择目标地图（可多选）</span>
+        <span id="authSelCount" style="color:#7799ee;font-size:11px"></span>
       </div>
+      <div class="modal-search">
+        <span style="color:#4a5568">🔍</span>
+        <input placeholder="输入地图名关键字搜索" oninput="filterMaps(this.value)">
+      </div>
+      <div class="map-list" id="authMapList"></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modalAuth')">取消</button>
-      <button class="btn btn-primary" id="btnConfirm" disabled onclick="doAuth()">确认授权</button>
+      <button class="btn btn-primary" id="btnConfirm" disabled onclick="openAuthConfirm()">确认授权</button>
+    </div>
+  </div>
+</div>
+
+<!-- 授权二次确认 modal -->
+<div class="modal-overlay hidden" id="modalAuthConfirm" onclick="bgClose(event,'modalAuthConfirm')">
+  <div class="modal" style="width:440px" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      二次确认
+      <button class="close-btn" onclick="closeModal('modalAuthConfirm')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:13px;color:#c8c8d0;line-height:1.7">
+        即将把 <b id="confResCount" style="color:#fff">1</b> 个资源授权至以下 <b id="confMapCount" style="color:#fff">0</b> 张地图，
+        <span style="color:#e0b060">授权后不可撤回</span>：
+      </div>
+      <div id="confMapList" style="max-height:180px;overflow-y:auto"></div>
+      <div id="confPublicNote" class="warning-bar" style="display:none;font-size:11px">
+        <b>公开效果说明：</b>本次授权列表中包含公开地图（已发布地图）。公开地图的公开链接可能被外部用户访问，请确认已知晓资源的暴露范围再继续。
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalAuthConfirm')">取消</button>
+      <button class="btn btn-primary" onclick="doAuthFinal()">确认授权</button>
+    </div>
+  </div>
+</div>
+
+<!-- 一键全量授权 modal -->
+<div class="modal-overlay hidden" id="modalGrantAll" onclick="bgClose(event,'modalGrantAll')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      🚀 一键授权到地图
+      <button class="close-btn" onclick="closeModal('modalGrantAll')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="warning-bar warning-danger">
+        <b>⚠ 操作影响与不可逆性</b>
+        <ul>
+          <li>本次将授权本人 <b>已上传及未来上传的全部资源</b>（不区分受限 / 公开）至所选地图；</li>
+          <li>授权 <b>完全不可撤回</b>，本人主动关闭 / 图主移除均无入口；</li>
+          <li>作者退出该地图共建后，<b>新上传的资源仍将继续</b>自动进入该地图。</li>
+        </ul>
+      </div>
+      <div class="modal-sub-label">
+        <span>选择目标地图（可多选）</span>
+        <span id="grantAllSelCount" style="color:#7799ee;font-size:11px"></span>
+      </div>
+      <div class="modal-search">
+        <span style="color:#4a5568">🔍</span>
+        <input placeholder="输入地图名关键字搜索" oninput="filterGrantAllMaps(this.value)">
+      </div>
+      <div class="map-list" id="grantAllMapList"></div>
+      <label class="confirm-check" id="grantAllAck" onclick="toggleAck(this)">
+        <span class="cc-box">✓</span>
+        <span>我已知晓：授权对象为本人全部资源（含未来上传），且此操作完全不可撤回</span>
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalGrantAll')">取消</button>
+      <button class="btn btn-danger" id="btnGrantAll" disabled onclick="openGrantAllConfirm()">确认授权</button>
+    </div>
+  </div>
+</div>
+
+<!-- 一键全量授权 二级确认 modal -->
+<div class="modal-overlay hidden" id="modalGrantAllConfirm" onclick="bgClose(event,'modalGrantAllConfirm')">
+  <div class="modal" style="width:420px" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      再次确认
+      <button class="close-btn" onclick="closeModal('modalGrantAllConfirm')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:13px;color:#e08a80;line-height:1.8">
+        你正在对 <b id="grantAllFinalCount" style="color:#ffb090">0</b> 张地图开启 <b style="color:#ffb090">一键全量授权</b>，此关系包含未来所有上传的资源，且无法撤回。
+      </div>
+      <div id="grantAllFinalList" style="max-height:160px;overflow-y:auto"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalGrantAllConfirm')">取消</button>
+      <button class="btn btn-danger" onclick="doGrantAllFinal()">确认开启</button>
     </div>
   </div>
 </div>
@@ -447,191 +605,427 @@ body {
 <div class="snackbar" id="snack"></div>
 
 <script>
-  let selMaps = new Set();
-  let detailOpen = false;
+/* ── Data ── */
+const MAPS = [
+  { id:'m1', name:'蛋仔冒险岛_夏日版', group:'my',     status:'draft',   isCurrent:false, granted:true,  grantAll:false },
+  { id:'m2', name:'新地图_共建测试',    group:'shared', status:'draft',   isCurrent:true,  granted:false, grantAll:false },
+  { id:'m3', name:'迷宫解谜_v2',        group:'my',     status:'draft',   isCurrent:false, granted:false, grantAll:false },
+  { id:'m4', name:'冬日主题地图',       group:'shared', status:'pub',     isCurrent:false, granted:false, grantAll:false },
+  { id:'m5', name:'PVE团队副本',        group:'shared', status:'draft',   isCurrent:false, granted:true,  grantAll:false },
+  { id:'m6', name:'新手教学关卡',       group:'my',     status:'pub',     isCurrent:false, granted:false, grantAll:false },
+];
 
-  /* ── Scene ── */
-  function setScene(n, el) {
-    document.querySelectorAll('.spill-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-    ['toastSingle','toastMulti'].forEach(id => document.getElementById(id).classList.add('hidden'));
-    const arrow = document.getElementById('collabArrow');
-    const items = document.getElementById('collabItems');
-    if (n === 1) { document.getElementById('toastSingle').classList.remove('hidden'); }
-    if (n === 2) { document.getElementById('toastMulti').classList.remove('hidden'); }
-    if (n === 3) {
-      arrow.textContent = '▼'; items.style.display = 'block';
-      document.getElementById('previewLabel').textContent = '展开「共建可用资源」，点击资源查看来源作者';
-    } else {
-      arrow.textContent = '▶'; items.style.display = 'none';
+const assetMeta = {
+  'item1': { name:'角色立绘_主角',   perm:'受限', id:'asset://img/10001' },
+  'item2': { name:'UI背景_蓝色系',   perm:'受限', id:'asset://img/10002' },
+  'item3': { name:'通用图标集',      perm:'公开', id:'asset://img/10003' },
+  'item4': { name:'场景背景_夕阳',   perm:'受限', id:'asset://img/10004' },
+};
+
+/* ── State ── */
+let selMaps = new Set();           // 授权给地图弹窗内选中的
+let grantAllSel = new Set();       // 一键全量授权选中的
+let multiSel = new Set();          // 树里多选的 item id
+let currentAsset = null;           // 触发授权弹窗的资源集合
+let detailOpen = false;
+let grantAllAck = false;
+
+/* ── Scene ── */
+function setScene(n, el) {
+  document.querySelectorAll('.spill-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+
+  // Reset transient UI
+  ['toastSingle','toastMulti','uploadConfirm'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  clearMulti();
+  const arrow = document.getElementById('collabArrow');
+  const items = document.getElementById('collabItems');
+  arrow.textContent = '▶'; items.style.display = 'none';
+  hideDetail();
+  document.getElementById('previewLabel').textContent = '点击资源查看详情 · 按 Ctrl / Shift 多选';
+
+  if (n === 0) {
+    // 单资源授权：hint 用户右键
+    document.getElementById('previewLabel').textContent = '在「我的文件」上右键任一资源，选择「授权给地图」';
+  }
+  if (n === 1) {
+    // 多选批量
+    ['item1','item2','item4'].forEach(id => toggleMulti(document.getElementById(id), true));
+    document.getElementById('previewLabel').textContent = '已多选 · 在任一被选资源上右键批量操作';
+  }
+  if (n === 2) document.getElementById('toastMulti').classList.remove('hidden');
+  if (n === 3) document.getElementById('uploadConfirm').classList.remove('hidden');
+  if (n === 4) {
+    arrow.textContent = '▼'; items.style.display = 'block';
+    document.getElementById('previewLabel').textContent = '展开「共创者授权给地图」，点击资源查看分享来源';
+  }
+  if (n === 5) {
+    openGrantAll();
+  }
+}
+
+/* ── Help ── */
+function toggleHelp(e) {
+  e.stopPropagation();
+  const pop = document.getElementById('helpPopover');
+  const btn = document.getElementById('helpBtn');
+  const hidden = pop.classList.contains('hidden');
+  pop.classList.toggle('hidden', !hidden);
+  btn.classList.toggle('active', hidden);
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#helpBtn') && !e.target.closest('#helpPopover')) {
+    document.getElementById('helpPopover').classList.add('hidden');
+    document.getElementById('helpBtn').classList.remove('active');
+  }
+});
+
+/* ── Tree folder toggle ── */
+document.getElementById('collabFolder').addEventListener('click', function() {
+  const items = document.getElementById('collabItems');
+  const arrow = document.getElementById('collabArrow');
+  const open  = items.style.display !== 'none';
+  items.style.display = open ? 'none' : 'block';
+  arrow.textContent = open ? '▶' : '▼';
+});
+
+/* ── Item click & multi-select ── */
+function clickItem(e, el, emoji) {
+  const isCollab = !!el.dataset.collab;
+
+  // Ctrl / Cmd click: toggle multi
+  if ((e.ctrlKey || e.metaKey) && !isCollab) {
+    toggleMulti(el);
+    return;
+  }
+  // Shift click: range multi (仅限"我的文件"分组内示意)
+  if (e.shiftKey && !isCollab) {
+    rangeMulti(el);
+    return;
+  }
+  // Normal click: clear multi & single select
+  clearMulti();
+  document.querySelectorAll('.tree-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('previewImg').textContent = emoji;
+  const name = el.querySelector('.item-name').textContent;
+  document.getElementById('previewLabel').textContent = name;
+
+  // Build detail
+  let source, perm, id, author, fromPath;
+  if (isCollab) {
+    source = '共创者授权给地图';
+    const badge = el.querySelector('.perm-badge');
+    perm   = badge ? badge.textContent : '受限';
+    id     = 'asset://img/' + Math.floor(20000 + Math.random()*10000);
+    author = el.dataset.author || '—';
+    fromPath = el.dataset.source || '授权给地图';
+  } else {
+    const meta = assetMeta[el.id] || {};
+    source = '我的文件';
+    perm   = meta.perm || '受限';
+    id     = meta.id   || '—';
+    author = null;
+    fromPath = null;
+  }
+  document.getElementById('detailSource').textContent = source;
+  document.getElementById('detailName').textContent   = name;
+  document.getElementById('detailPerm').textContent   = perm;
+  document.getElementById('detailId').textContent     = id;
+  document.getElementById('detailAuthorRow').style.display = author ? 'flex' : 'none';
+  document.getElementById('detailFromRow').style.display   = fromPath ? 'flex' : 'none';
+  if (author) document.getElementById('detailAuthor').textContent = author;
+  if (fromPath) document.getElementById('detailFrom').textContent = fromPath;
+  showDetail();
+}
+
+function toggleMulti(el, forceOn) {
+  if (!el || el.dataset.collab) return;
+  const id = el.id;
+  if (multiSel.has(id) && !forceOn) {
+    multiSel.delete(id); el.classList.remove('multi-sel');
+  } else {
+    multiSel.add(id); el.classList.add('multi-sel');
+  }
+  refreshMultiBanner();
+}
+function rangeMulti(el) {
+  const all = [...document.querySelectorAll('.my-item')];
+  const last = [...multiSel].pop();
+  const lastEl = last ? document.getElementById(last) : all[0];
+  const i1 = all.indexOf(lastEl);
+  const i2 = all.indexOf(el);
+  if (i1 < 0 || i2 < 0) return;
+  const [lo,hi] = i1 < i2 ? [i1,i2] : [i2,i1];
+  for (let i = lo; i <= hi; i++) toggleMulti(all[i], true);
+}
+function clearMulti() {
+  multiSel.clear();
+  document.querySelectorAll('.tree-item.multi-sel').forEach(i => i.classList.remove('multi-sel'));
+  refreshMultiBanner();
+}
+function refreshMultiBanner() {
+  const b = document.getElementById('multiBanner');
+  if (multiSel.size >= 2) {
+    b.classList.remove('hidden');
+    document.getElementById('multiCount').textContent = multiSel.size;
+  } else {
+    b.classList.add('hidden');
+  }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') clearMulti(); });
+
+function toggleDetail() { detailOpen ? hideDetail() : showDetail(); }
+function showDetail() { detailOpen = true; document.getElementById('detailCard').classList.add('show'); document.getElementById('detailBtn').textContent = '详情<<'; }
+function hideDetail() { detailOpen = false; document.getElementById('detailCard').classList.remove('show'); document.getElementById('detailBtn').textContent = '详情>>'; }
+
+/* ── Context menu ── */
+let ctxTarget = null;
+function ctxShow(e, el) {
+  e.preventDefault(); e.stopPropagation();
+  ctxClose();
+  ctxTarget = el;
+
+  const isCollab = !!el.dataset.collab;
+  if (isCollab) {
+    posMenu(document.getElementById('ctxCollab'), e);
+    document.getElementById('ctxCollab').classList.add('show');
+    return;
+  }
+  // 若右键的是多选集里的资源，弹多选菜单
+  if (multiSel.size >= 2 && multiSel.has(el.id)) {
+    const menu = document.getElementById('ctxMulti');
+    const n = multiSel.size;
+    document.getElementById('ctxMultiAuth').setAttribute('data-count', n);
+    document.getElementById('ctxMultiPub').setAttribute('data-count', n);
+    document.getElementById('ctxMultiDel').setAttribute('data-count', n);
+    posMenu(menu, e); menu.classList.add('show');
+    return;
+  }
+  // 单选菜单：受限时才显示"授权给地图"和"公开资源"（跟原文档口径一致，仅公开时隐藏"公开资源"）
+  const own = document.getElementById('ctxOwn');
+  const auth = document.getElementById('ctxAuth');
+  const pub  = document.getElementById('ctxPub');
+  const isPublic = el.dataset.perm === 'p';
+  auth.style.display = 'flex';           // 授权给地图 对公开/受限都保留（新交互稿）
+  pub.style.display  = isPublic ? 'none' : 'flex';
+  posMenu(own, e); own.classList.add('show');
+}
+function posMenu(m, e) {
+  const x = Math.min(e.clientX, window.innerWidth  - 195);
+  const y = Math.min(e.clientY, window.innerHeight - 240);
+  m.style.left = x + 'px'; m.style.top = y + 'px';
+}
+function ctxClose() {
+  ['ctxOwn','ctxMulti','ctxCollab'].forEach(id => document.getElementById(id).classList.remove('show'));
+}
+document.addEventListener('click', () => ctxClose());
+function copyId(e) {
+  ctxClose();
+  const id = document.getElementById('detailId').textContent;
+  navigator.clipboard.writeText(id).catch(() => {});
+  snack('已复制 ID：' + id);
+}
+
+/* ── 授权给地图 Modal ── */
+function openAuthFromCtx(mode) {
+  ctxClose();
+  let assets = [];
+  if (mode === 'multi') {
+    assets = [...multiSel].map(id => document.getElementById(id).querySelector('.item-name').textContent);
+  } else {
+    assets = ctxTarget ? [ctxTarget.querySelector('.item-name').textContent] : ['未命名'];
+  }
+  openAuth(assets);
+}
+function openAuth(assetNames) {
+  currentAsset = assetNames;
+  selMaps.clear();
+  renderAuthMapList('');
+  const info = document.getElementById('authAssetInfo');
+  if (assetNames.length === 1) {
+    info.innerHTML = '<div class="modal-sub-label">本次资源：<span class="asset-chip">🖼️ '+assetNames[0]+'</span></div>';
+  } else {
+    info.innerHTML = '<div class="modal-sub-label">本次资源：<b style="color:#c8c8d0">'+assetNames.length+' 个</b></div>'
+      + '<div class="asset-chips" style="margin-top:4px">' + assetNames.map(n => '<span class="asset-chip">🖼️ '+n+'</span>').join('') + '</div>';
+  }
+  document.getElementById('authSelCount').textContent = '';
+  document.getElementById('btnConfirm').disabled = true;
+  document.getElementById('btnConfirm').textContent = '确认授权';
+  document.getElementById('modalAuth').classList.remove('hidden');
+}
+function renderAuthMapList(filter, preselect) {
+  const list = document.getElementById('authMapList');
+  const q = (filter || '').trim().toLowerCase();
+  const groupOrder = [['my','我的地图'], ['shared','参与共建']];
+  let html = '';
+  for (const [g, label] of groupOrder) {
+    const rows = MAPS.filter(m => m.group === g && m.name.toLowerCase().includes(q));
+    if (!rows.length) continue;
+    // sort: 当前地图置顶，其他按 name 稳定
+    rows.sort((a,b) => (b.isCurrent?1:0) - (a.isCurrent?1:0));
+    html += '<div class="map-group-header">' + label + '</div>';
+    for (const m of rows) {
+      const locked = m.granted || m.grantAll;
+      const cbCls  = m.grantAll ? 'lock' : (m.granted ? 'lock' : (selMaps.has(m.id) ? 'on' : ''));
+      const stTxt  = m.grantAll ? '<span class="map-st grant-all">已一键授权</span>'
+                    : m.granted ? '<span class="map-st done">已授权</span>'
+                    : (m.status === 'pub' ? '<span class="map-st pub">已发布</span>' : '<span class="map-st draft">草稿</span>');
+      html += `<div class="map-row ${locked?'locked':''} ${selMaps.has(m.id)?'sel':''}" data-mid="${m.id}" onclick="onMapRowClick(event,this,${locked},${m.grantAll})">
+        <div class="map-cb ${cbCls}">${cbCls==='on'?'✓':(locked?'✓':'')}</div>
+        <div class="map-name-col">${m.name}${m.isCurrent?'<span class="map-current-tag">当前</span>':''}</div>
+        ${stTxt}
+      </div>`;
     }
-    hideDetail();
   }
-
-  function toggleHelp(e) {
-    e.stopPropagation();
-    const pop = document.getElementById('helpPopover');
-    const btn = document.getElementById('helpBtn');
-    const hidden = pop.classList.contains('hidden');
-    pop.classList.toggle('hidden', !hidden);
-    btn.classList.toggle('active', hidden);
-  }
-  document.addEventListener('click', function(e) {
-    if (!e.target.closest('#helpBtn') && !e.target.closest('#helpPopover')) {
-      document.getElementById('helpPopover').classList.add('hidden');
-      document.getElementById('helpBtn').classList.remove('active');
-    }
-  });
-
-  /* ── Tree folder toggle ── */
-  document.getElementById('collabFolder').addEventListener('click', function() {
-    const items = document.getElementById('collabItems');
-    const arrow = document.getElementById('collabArrow');
-    const open  = items.style.display !== 'none';
-    items.style.display = open ? 'none' : 'block';
-    arrow.textContent = open ? '▶' : '▼';
-  });
-
-  /* ── Select item ── */
-  const assetMeta = {
-    'item1': { source:'我的文件', name:'角色立绘_主角',   perm:'受限',  id:'asset://img/10001', author:null },
-    'item2': { source:'我的文件', name:'UI背景_蓝色系',    perm:'受限',  id:'asset://img/10002', author:null },
-    'item3': { source:'我的文件', name:'通用图标集',        perm:'公开',  id:'asset://img/10003', author:null },
-    'item4': { source:'我的文件', name:'场景背景_夕阳',    perm:'受限',  id:'asset://img/10004', author:null },
-  };
-
-  function selectItem(el, emoji, isCollab) {
-    document.querySelectorAll('.tree-item').forEach(i => i.classList.remove('selected'));
-    el.classList.add('selected');
-    document.getElementById('previewImg').textContent = emoji;
-    const name = el.querySelector('.item-name').textContent;
-    document.getElementById('previewLabel').textContent = name;
-
-    // build detail data
-    let source, perm, id, author;
-    if (isCollab) {
-      source = '共建可用资源';
-      const badge = el.querySelector('.perm-badge');
-      perm   = badge ? badge.textContent : '受限';
-      id     = 'asset://img/' + Math.floor(20000 + Math.random()*10000);
-      author = el.dataset.author || '—';
-    } else {
-      const meta = assetMeta[el.id] || {};
-      source = meta.source || '我的文件';
-      perm   = meta.perm   || '受限';
-      id     = meta.id     || '—';
-      author = null;
-    }
-    document.getElementById('detailSource').textContent = source;
-    document.getElementById('detailName').textContent   = name;
-    document.getElementById('detailPerm').textContent   = perm;
-    document.getElementById('detailId').textContent     = id;
-    const authorRow = document.getElementById('detailAuthorRow');
-    if (author) {
-      document.getElementById('detailAuthor').textContent = author;
-      authorRow.style.display = 'flex';
-    } else {
-      authorRow.style.display = 'none';
-    }
-    showDetail();
-  }
-
-  function toggleDetail() {
-    detailOpen ? hideDetail() : showDetail();
-  }
-  function showDetail() {
-    detailOpen = true;
-    document.getElementById('detailCard').classList.add('show');
-    document.getElementById('detailBtn').textContent = '详情<<';
-  }
-  function hideDetail() {
-    detailOpen = false;
-    document.getElementById('detailCard').classList.remove('show');
-    document.getElementById('detailBtn').textContent = '详情>>';
-  }
-
-  /* ── Context menu ── */
-  let ctxStatus = '';
-  function ctxShow(e, status) {
-    e.preventDefault(); e.stopPropagation();
-    ctxStatus = status;
-    ctxClose();
-    const own    = document.getElementById('ctxOwn');
-    const collab = document.getElementById('ctxCollab');
-
-    if (status === 'collab') {
-      posMenu(collab, e); collab.classList.add('show');
-    } else {
-      const auth = document.getElementById('ctxAuth');
-      const pub  = document.getElementById('ctxPub');
-      const tex  = document.getElementById('ctxTexture');
-      auth.style.display = status === 'p' ? 'none' : 'flex';
-      pub.style.display  = status === 'p' ? 'none' : 'flex';
-      tex.style.display  = 'flex'; // image type always shows
-      posMenu(own, e); own.classList.add('show');
-    }
-  }
-  function posMenu(m, e) {
-    const x = Math.min(e.clientX, window.innerWidth  - 185);
-    const y = Math.min(e.clientY, window.innerHeight - 200);
-    m.style.left = x + 'px'; m.style.top = y + 'px';
-  }
-  function ctxClose() {
-    document.getElementById('ctxOwn').classList.remove('show');
-    document.getElementById('ctxCollab').classList.remove('show');
-  }
-  document.addEventListener('click', () => ctxClose());
-
-  function copyId(e) {
-    ctxClose();
-    const id = document.getElementById('detailId').textContent;
-    navigator.clipboard.writeText(id).catch(() => {});
-    snack('已复制 ID：' + id);
-  }
-
-  /* ── Modal ── */
-  function openModal(type) {
-    ctxClose(); selMaps.clear();
-    document.querySelectorAll('.map-row:not(.locked) .map-cb').forEach(cb => {
-      cb.classList.remove('on'); cb.textContent = '';
-      cb.closest('.map-row').classList.remove('sel');
+  list.innerHTML = html || '<div style="padding:20px;text-align:center;color:#556;font-size:11px">无匹配地图</div>';
+  if (preselect && preselect.length) {
+    preselect.forEach(mid => {
+      const row = list.querySelector('[data-mid="'+mid+'"]');
+      if (row && !row.classList.contains('locked')) onMapRowClick(null, row, false, false);
     });
-    document.getElementById('btnConfirm').disabled = true;
-    // asset info line
-    const info = document.getElementById('authAssetInfo');
-    info.innerHTML = '';
-    document.getElementById('modalAuth').classList.remove('hidden');
   }
-  function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-  function bgClose(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
+  updateAuthBtn();
+}
+function filterMaps(v) { renderAuthMapList(v); }
+function onMapRowClick(e, row, locked, grantAll) {
+  if (locked) {
+    snack(grantAll ? '此地图已开启一键全量授权' : '已授权的地图不可撤销授权', 'warn');
+    return;
+  }
+  const mid = row.dataset.mid;
+  const cb  = row.querySelector('.map-cb');
+  if (selMaps.has(mid)) { selMaps.delete(mid); cb.classList.remove('on'); cb.textContent = ''; row.classList.remove('sel'); }
+  else                  { selMaps.add(mid);    cb.classList.add('on');    cb.textContent = '✓'; row.classList.add('sel'); }
+  updateAuthBtn();
+}
+function updateAuthBtn() {
+  const n = selMaps.size;
+  const btn = document.getElementById('btnConfirm');
+  btn.disabled = n === 0;
+  btn.textContent = n === 0 ? '确认授权' : `确认授权 (${n})`;
+  document.getElementById('authSelCount').textContent = n ? `新勾选 ${n} 张` : '';
+}
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+function bgClose(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
 
-  function toggleMap(row) {
-    const cb = row.querySelector('.map-cb');
-    const nm = row.querySelector('.map-name-col').textContent;
-    const on = cb.classList.contains('on');
-    cb.classList.toggle('on',!on); cb.textContent = on ? '' : '✓';
-    row.classList.toggle('sel',!on);
-    on ? selMaps.delete(nm) : selMaps.add(nm);
-    document.getElementById('btnConfirm').disabled = selMaps.size === 0;
-  }
+/* ── 授权二次确认 ── */
+function openAuthConfirm() {
+  const picked = [...selMaps].map(mid => MAPS.find(m => m.id === mid));
+  document.getElementById('confResCount').textContent = currentAsset ? currentAsset.length : 1;
+  document.getElementById('confMapCount').textContent = picked.length;
+  document.getElementById('confMapList').innerHTML = picked.map(m =>
+    `<div style="padding:6px 10px;background:#1a1a26;border-radius:3px;margin-top:5px;font-size:12px;color:#c8c8d0">
+      ${m.name} <span style="color:#606070;font-size:10px;margin-left:6px">${m.status==='pub'?'已发布':'草稿'}</span>
+    </div>`).join('');
+  const hasPub = picked.some(m => m.status === 'pub');
+  document.getElementById('confPublicNote').style.display = hasPub ? 'block' : 'none';
+  document.getElementById('modalAuthConfirm').classList.remove('hidden');
+}
+function doAuthFinal() {
+  const names = [...selMaps].map(mid => MAPS.find(m => m.id === mid).name);
+  // mark as granted
+  selMaps.forEach(mid => { const m = MAPS.find(m => m.id === mid); if (m) m.granted = true; });
+  closeModal('modalAuthConfirm'); closeModal('modalAuth');
+  snack('授权成功：' + names.join('、'));
+}
 
-  function doAuth() {
-    closeModal('modalAuth');
-    snack('已授权至：' + [...selMaps].join('、'));
+/* ── 快捷授权 ── */
+function quickGrant(fromId, assetNames) {
+  document.getElementById(fromId).classList.add('hidden');
+  openAuth(assetNames);
+  // 默认勾选【当前】
+  const cur = MAPS.find(m => m.isCurrent && !m.granted && !m.grantAll);
+  if (cur) {
+    selMaps.add(cur.id);
+    renderAuthMapList('');
   }
+}
+function toastDone(id, msg) {
+  document.getElementById(id).classList.add('hidden');
+  if (msg) snack(msg);
+}
 
-  /* ── Toast ── */
-  function toastDone(id, msg) {
-    document.getElementById(id).classList.add('hidden');
-    if (msg) snack(msg);
+/* ── 一键全量授权 ── */
+function openGrantAll() {
+  grantAllSel.clear(); grantAllAck = false;
+  document.getElementById('grantAllAck').classList.remove('on');
+  renderGrantAllList('');
+  document.getElementById('btnGrantAll').disabled = true;
+  document.getElementById('btnGrantAll').textContent = '确认授权';
+  document.getElementById('grantAllSelCount').textContent = '';
+  document.getElementById('modalGrantAll').classList.remove('hidden');
+}
+function renderGrantAllList(filter) {
+  const list = document.getElementById('grantAllMapList');
+  const q = (filter || '').trim().toLowerCase();
+  const groupOrder = [['my','我的地图'], ['shared','参与共建']];
+  let html = '';
+  for (const [g, label] of groupOrder) {
+    const rows = MAPS.filter(m => m.group === g && m.name.toLowerCase().includes(q));
+    if (!rows.length) continue;
+    rows.sort((a,b) => (b.isCurrent?1:0) - (a.isCurrent?1:0));
+    html += '<div class="map-group-header">' + label + '</div>';
+    for (const m of rows) {
+      const locked = m.grantAll;
+      const cbCls  = locked ? 'lock' : (grantAllSel.has(m.id) ? 'on' : '');
+      const stTxt  = locked ? '<span class="map-st grant-all">已开启</span>'
+                    : (m.status === 'pub' ? '<span class="map-st pub">已发布</span>' : '<span class="map-st draft">草稿</span>');
+      html += `<div class="map-row ${locked?'locked':''} ${grantAllSel.has(m.id)?'sel':''}" data-mid="${m.id}" onclick="onGrantAllRowClick(event,this,${locked})">
+        <div class="map-cb ${cbCls}">${cbCls==='on'?'✓':(locked?'✓':'')}</div>
+        <div class="map-name-col">${m.name}${m.isCurrent?'<span class="map-current-tag">当前</span>':''}</div>
+        ${stTxt}
+      </div>`;
+    }
   }
+  list.innerHTML = html || '<div style="padding:20px;text-align:center;color:#556;font-size:11px">无匹配地图</div>';
+  updateGrantAllBtn();
+}
+function filterGrantAllMaps(v) { renderGrantAllList(v); }
+function onGrantAllRowClick(e, row, locked) {
+  if (locked) { snack('该地图已开启一键全量授权', 'warn'); return; }
+  const mid = row.dataset.mid;
+  const cb  = row.querySelector('.map-cb');
+  if (grantAllSel.has(mid)) { grantAllSel.delete(mid); cb.classList.remove('on'); cb.textContent = ''; row.classList.remove('sel'); }
+  else                      { grantAllSel.add(mid);    cb.classList.add('on');    cb.textContent = '✓'; row.classList.add('sel'); }
+  updateGrantAllBtn();
+}
+function toggleAck(el) {
+  grantAllAck = !grantAllAck;
+  el.classList.toggle('on', grantAllAck);
+  updateGrantAllBtn();
+}
+function updateGrantAllBtn() {
+  const n = grantAllSel.size;
+  const btn = document.getElementById('btnGrantAll');
+  btn.disabled = !(n > 0 && grantAllAck);
+  btn.textContent = n === 0 ? '确认授权' : `确认授权 (${n})`;
+  document.getElementById('grantAllSelCount').textContent = n ? `新勾选 ${n} 张` : '';
+}
+function openGrantAllConfirm() {
+  const picked = [...grantAllSel].map(mid => MAPS.find(m => m.id === mid));
+  document.getElementById('grantAllFinalCount').textContent = picked.length;
+  document.getElementById('grantAllFinalList').innerHTML = picked.map(m =>
+    `<div style="padding:6px 10px;background:#2a1a1a;border:1px solid #4a2a1a;border-radius:3px;margin-top:5px;font-size:12px;color:#ffc8b0">
+      ${m.name}${m.isCurrent?' <span style="color:#7799ee;font-size:10px">（当前）</span>':''}
+    </div>`).join('');
+  document.getElementById('modalGrantAllConfirm').classList.remove('hidden');
+}
+function doGrantAllFinal() {
+  const names = [...grantAllSel].map(mid => MAPS.find(m => m.id === mid).name);
+  grantAllSel.forEach(mid => { const m = MAPS.find(m => m.id === mid); if (m) m.grantAll = true; });
+  closeModal('modalGrantAllConfirm'); closeModal('modalGrantAll');
+  snack('已开启对以下地图的全量授权：' + names.join('、'));
+}
 
-  /* ── Snack ── */
-  function snack(msg) {
-    const s = document.getElementById('snack');
-    s.textContent = '✓ ' + msg; s.classList.add('show');
-    setTimeout(() => s.classList.remove('show'), 2500);
-  }
+/* ── Snack ── */
+function snack(msg, cls) {
+  const s = document.getElementById('snack');
+  s.textContent = (cls==='warn'?'⚠ ':'✓ ') + msg;
+  s.classList.remove('warn'); if (cls==='warn') s.classList.add('warn');
+  s.classList.add('show');
+  clearTimeout(s._t); s._t = setTimeout(() => s.classList.remove('show'), 2600);
+}
 </script>
 </body>
 </html>
